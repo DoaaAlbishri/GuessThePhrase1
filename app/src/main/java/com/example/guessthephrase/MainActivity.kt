@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var myLayout : ConstraintLayout
     lateinit var myRv : RecyclerView
     lateinit var tv1 : TextView
+    lateinit var tv5 : TextView
 
     var pharse = "Hello World"
     var str = "*".repeat(pharse.length)
@@ -29,16 +30,28 @@ class MainActivity : AppCompatActivity() {
     var leftList = arrayListOf<String>()
     var letterList = arrayListOf<String>()
 
+    private val sharedPrefFile = "kotlinsharedpreference"
+    var score = 0
+    lateinit var sharedPreferences: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         myLayout = findViewById(R.id.clMain)
         tv1 = findViewById(R.id.tv)
+        tv5 = findViewById(R.id.tv5)
         myRv = findViewById(R.id.recyclerView)
         button = findViewById(R.id.button)
         editText = findViewById(R.id.editText)
-
+        sharedPreferences = this.getSharedPreferences(sharedPrefFile, Context.MODE_PRIVATE)
         tv1.setText("Pharse: ${str} \n Gussed Letter: ")
+
+        val sharedIdValue = sharedPreferences.getInt("id_key",0)
+        if(sharedIdValue.equals(0)){
+            tv5.setText("default Score: ${sharedIdValue.toString()}")
+        }else{
+            tv5.setText("High Score : ${sharedIdValue.toString()}")
+        }
 
         myRv.adapter = RecyclerViewAdapter(guessList, leftList, letterList)
         myRv.layoutManager = LinearLayoutManager(this)
@@ -55,12 +68,26 @@ class MainActivity : AppCompatActivity() {
             var input = editText.text.toString()
             if (!editText.text.isEmpty()) {
                 if (pharse.toLowerCase() == input.toLowerCase()) {
+                    score = 20 - left
                     --left
                     tv1.setText("Pharse: ${input} \n Gussed Letter: ")
                     guessList.add("")
                     letterList.add("")
                     leftList.add("${left} guesses remaining")
                     myRv.adapter?.notifyDataSetChanged()
+                    val id:Int = Integer.parseInt(score.toString())
+                    val editor:SharedPreferences.Editor =  sharedPreferences.edit()
+                    val sharedIdValue = sharedPreferences.getInt("id_key",0)
+                    if(score > sharedIdValue) {
+                        editor.putInt("id_key", id)
+                        editor.apply()
+                        editor.commit()
+                    }
+                    if(sharedIdValue.equals(0)){
+                        tv5.setText("default Score: ${sharedIdValue.toString()}")
+                    }else{
+                        tv5.setText("High Score : ${sharedIdValue.toString()}")
+                    }
                     this.recreate()
                 } else {
                     --left
@@ -114,6 +141,20 @@ class MainActivity : AppCompatActivity() {
                 Snackbar.make(myLayout, "Enter one letter please", Snackbar.LENGTH_LONG).show()
             }
             if (Newstr.equals(pharse, true) || letter == 0) {
+                score=(20-10)-letter
+                val id:Int = Integer.parseInt(score.toString())
+                val editor:SharedPreferences.Editor =  sharedPreferences.edit()
+                val sharedIdValue = sharedPreferences.getInt("id_key",0)
+                if(score > sharedIdValue) {
+                    editor.putInt("id_key", id)
+                    editor.apply()
+                    editor.commit()
+                }
+                if(sharedIdValue.equals(0)){
+                    tv5.setText("default Score: ${sharedIdValue.toString()}")
+                }else{
+                    tv5.setText("High Score : ${sharedIdValue.toString()}")
+                }
                 this.recreate()
             }
         }
